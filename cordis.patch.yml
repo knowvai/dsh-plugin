@@ -1,0 +1,26 @@
+# KnowV is a remote Streamable HTTP MCP server. The DSH installation provides
+# the generic MCP client; this bundle contributes only the deployment config.
+- insert:
+    - id: knowv-mcp
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: knowv
+        transport: streamable-http
+        url: !!js >-
+          process.env.KNOWV_MCP_SERVER_URL?.trim()
+            && process.env.KNOWV_MCP_API_KEY?.trim()
+            ? process.env.KNOWV_MCP_SERVER_URL.trim()
+            : undefined
+        headers:
+          Authorization: !!js >-
+            process.env.KNOWV_MCP_SERVER_URL?.trim()
+              && process.env.KNOWV_MCP_API_KEY?.trim()
+              ? `Bearer ${process.env.KNOWV_MCP_API_KEY.trim()}`
+              : undefined
+        toolCallTimeoutMs: 60000
+        failOnStartupError: false
+        reconnect:
+          enabled: true
+          initialDelayMs: 500
+          maxDelayMs: 30000
+          maxAttempts: 10
