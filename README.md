@@ -1,6 +1,6 @@
-# KnowV MCP for DeepSeek Harness
+# dsh-plugin
 
-`@knowvai/dsh-mcp` 是一个可安装的 DeepSeek Harness bundle。它通过 Harness 官方的 `@deepseek-ai/dsh-mcp-client` 连接 KnowV MCP Server，并将 KnowV 的只读知识工具注册为 Harness 原生工具。
+`@knowvai/dsh-plugin` 是 KnowV MCP 的 DeepSeek Harness bundle。它通过 Harness 官方的 `@deepseek-ai/dsh-mcp-client` 连接 KnowV MCP Server，并将 KnowV 的只读知识工具注册为 Harness 原生工具。
 
 插件本身不实现 MCP 协议，也不包含 URL、API Key 或租户信息。
 
@@ -8,6 +8,7 @@
 
 - DeepSeek Harness `0.1.0-rc.5` 或兼容版本。
 - Node.js `^22.19.0` 或 `>=24.0.0`。
+- pnpm 11 或兼容版本，并且 `pnpm` 必须位于 `PATH` 中。
 - 客户端可以访问经 AuthGate 暴露的 KnowV MCP endpoint。
 - 当前用户在目标租户下创建的 active USER API Key。
 
@@ -38,33 +39,46 @@ KnowV 当前不提供 MCP OAuth discovery 或浏览器授权流程。API Key 必
 
 不要把真实 Key 写入本仓库、profile patch、命令历史、日志或工单。`dsh --dump-config` 不会执行 bundle 中的 `!!js` 表达式，因此只会显示环境变量引用，不会展开 Key。
 
-## 本地安装
+## GitHub 安装
 
-在 KnowV 仓库根目录执行：
+安装到 Harness 的 `web` profile：
 
 ```bash
-dsh plugin --profile web add ./deepseek-harness-plugin
-dsh --profile web --dump-config
-dsh --profile web
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
+  plugin --profile web add github:knowvai/dsh-plugin
+
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
+  --profile web --dump-config
+
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 --profile web
 ```
 
-也可以安装到其他 profile，例如 `headless`。配置 dump 中应出现 `@knowvai/dsh-mcp` layer，以及 id 为 `knowv-mcp`、name 为 `@deepseek-ai/dsh-mcp-client` 的插件行。
+也可以安装到其他 profile，例如 `headless`。配置 dump 中应出现 `@knowvai/dsh-plugin` layer，以及 id 为 `knowv-mcp`、name 为 `@deepseek-ai/dsh-mcp-client` 的插件行。
 
-从 DeepSeek Harness 源码运行时，将上面的 `dsh` 替换为该仓库约定的 `pnpm dsh`。
+生产环境建议固定 Git commit，避免默认分支后续变化改变安装内容：
+
+```bash
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
+  plugin --profile web add 'github:knowvai/dsh-plugin#<完整提交SHA>'
+```
+
+从 DeepSeek Harness 源码运行时，将上面的 `npx --yes @deepseek-ai/dsh@0.1.0-rc.6` 替换为该仓库约定的 `pnpm dsh`。
 
 ## Tarball 安装
 
 生成本地 tarball：
 
 ```bash
-cd deepseek-harness-plugin
+git clone https://github.com/knowvai/dsh-plugin.git
+cd dsh-plugin
 pnpm pack
 ```
 
-然后从 KnowV 仓库根目录安装生成的包：
+然后安装生成的包：
 
 ```bash
-dsh plugin --profile web add ./deepseek-harness-plugin/knowvai-dsh-mcp-0.1.0.tgz
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
+  plugin --profile web add ./knowvai-dsh-plugin-0.1.0.tgz
 ```
 
 本包标记为 private，用于阻止意外发布到 npm；本地目录和 tarball 安装不受影响。
@@ -128,7 +142,8 @@ DSH 的后续 patch 会替换目标行的整个 `config`，不会按字段深度
 ## 卸载
 
 ```bash
-dsh plugin --profile web remove @knowvai/dsh-mcp
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
+  plugin --profile web remove @knowvai/dsh-plugin
 ```
 
 卸载 bundle 或通过 HMR 替换配置时，Harness 会释放 MCP 连接并注销该实例注册的工具。
@@ -140,4 +155,4 @@ dsh plugin --profile web remove @knowvai/dsh-mcp
 - KnowV MCP Server 必须独立部署并保持可访问；本 bundle 不启动、迁移或管理服务端。
 - Streamable HTTP 连接需要系统信任 endpoint 的 TLS 证书；不要长期关闭证书校验。
 
-KnowV MCP 的完整客户端合同和排障信息见仓库中的 `docs/mcp-server-usage-guide.md`。
+KnowV MCP 的完整客户端合同和排障信息见 [KnowV MCP Server 使用指南](https://github.com/knowvai/knowv-ai/blob/main/docs/mcp-server-usage-guide.md)。

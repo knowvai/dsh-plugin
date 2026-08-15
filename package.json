@@ -1,5 +1,5 @@
 {
-  "name": "@knowvai/dsh-mcp",
+  "name": "@knowvai/dsh-plugin",
   "version": "0.1.0",
   "description": "DeepSeek Harness bundle for the KnowV MCP Server",
   "private": true,
@@ -10,6 +10,14 @@
   ],
   "engines": {
     "node": "^22.19.0 || >=24.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/knowvai/dsh-plugin.git"
+  },
+  "homepage": "https://github.com/knowvai/dsh-plugin#readme",
+  "bugs": {
+    "url": "https://github.com/knowvai/dsh-plugin/issues"
   },
   "dsh": {
     "bundle": {
