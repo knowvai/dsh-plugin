@@ -1,168 +1,108 @@
-# dsh-plugin
+# KnowV Plugin for DeepSeek Harness
 
-`dsh-plugin` 仓库交付安装名为 `@knowvai/knowv` 的 DeepSeek Harness bundle。它通过一个轻量包装入口复用 Harness 官方的 `@deepseek-ai/dsh-mcp-client`，在插件列表中显示为 `knowv`，并将 KnowV 的只读知识工具注册为 Harness 原生工具。
+这个插件把 KnowV 企业知识能力接入 DeepSeek Harness。安装并配置后，你可以直接在 Harness 对话中查询自己有权限访问的知识库和文件。
 
-包装入口只覆盖 Cordis 插件名称，不实现 MCP 协议，也不包含 URL、API Key 或租户信息。
-
-## 前提
-
-- DeepSeek Harness `0.1.0-rc.6`；包装入口依赖同版本的官方 MCP client。
-- Node.js `^22.19.0` 或 `>=24.0.0`。
-- pnpm 11 或兼容版本，并且 `pnpm` 必须位于 `PATH` 中。
-- 客户端可以访问经 AuthGate 暴露的 KnowV MCP endpoint。
-- 当前用户在目标租户下创建的 active USER API Key。
-
-MCP endpoint 必须是 AuthGate 或其前置网关暴露的精确 `/mcp` 地址，例如：
+本插件面向 KnowV SaaS 用户，固定连接 KnowV 官方服务：
 
 ```text
-https://knowv.internal.example/mcp
+https://console.knowvai.com/mcp
 ```
 
-不要配置 `http://mcpserver:8081`。这是只信任 AuthGate 已验证身份头的内部服务地址，不能作为客户端认证边界。
+不需要部署服务器，也不要填写其他 MCP 地址。
 
-## 配置凭据
+## 开始前
 
-在启动 DeepSeek Harness 的同一个 shell 或进程环境中设置：
+- 已安装 DeepSeek Harness `0.1.0-rc.6` 或更高版本。
+- 已安装 Node.js 22.19+ 和 pnpm 11+，并确保 `pnpm` 在 PATH 中。
+- 已有 KnowV 账号，并能登录 [KnowV 控制台](https://console.knowvai.com/)。
 
-```bash
-export KNOWV_MCP_SERVER_URL="https://knowv.internal.example/mcp"
-export KNOWV_MCP_API_KEY="<local-secret>"
-```
+## 1. 安装插件
 
-两个变量都必须为非空值。API Key 会作为静态 Bearer credential 发送：
-
-```http
-Authorization: Bearer <knowv-api-key>
-```
-
-KnowV 当前不提供 MCP OAuth discovery 或浏览器授权流程。API Key 必须属于 USER，并固定绑定一个租户；不能通过 URL、header 或工具参数切换租户。访问另一个租户时，应使用绑定到该租户的另一个 API Key 和唯一的 Harness `serverName`。
-
-不要把真实 Key 写入本仓库、profile patch、命令历史、日志或工单。`dsh --dump-config` 不会执行 bundle 中的 `!!js` 表达式，因此只会显示环境变量引用，不会展开 Key。
-
-## GitHub 安装
-
-安装到 Harness 的 `web` profile：
+在终端执行：
 
 ```bash
 npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
   plugin --profile web add github:knowvai/dsh-plugin
+```
 
-npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
-  --profile web --dump-config
+## 2. 创建 KnowV API Key
 
+打开 [API Key 管理页面](https://console.knowvai.com/manager-api-key)，登录后创建一个 API Key，并复制完整内容。
+
+API Key 的权限由它所属的 KnowV 账号和租户决定。Harness 中不能通过参数切换到其他租户；如果需要访问其他租户，请使用对应租户下创建的 API Key。
+
+## 3. 配置环境变量
+
+必须在启动 DeepSeek Harness 的同一个终端中设置以下变量：
+
+```bash
+export KNOWV_MCP_SERVER_URL="https://console.knowvai.com/mcp"
+export KNOWV_MCP_API_KEY="粘贴你刚创建的 API Key"
+```
+
+然后从这个终端启动 Harness：
+
+```bash
 npx --yes @deepseek-ai/dsh@0.1.0-rc.6 --profile web
 ```
 
-也可以安装到其他 profile，例如 `headless`。GitHub 仓库名与安装后的包名相互独立：配置 dump 中应出现 `@knowvai/knowv` layer，以及 id 为 `knowv-mcp`、name 为 `@knowvai/knowv` 的插件行；Web UI 的“设置 → 插件列表”中应显示 `knowv`。
+如果 Harness 已经在运行，请先退出，再用设置好环境变量的终端重新启动。直接从桌面图标启动的 Harness 通常不会读取你终端里的环境变量。
 
-生产环境建议固定 Git commit，避免默认分支后续变化改变安装内容：
+## 4. 检查是否配置成功
 
-```bash
-npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
-  plugin --profile web add 'github:knowvai/dsh-plugin#<完整提交SHA>'
-```
+打开 Harness 的“设置 → 插件”，插件列表中应看到 `knowv`。
 
-从 DeepSeek Harness 源码运行时，将上面的 `npx --yes @deepseek-ai/dsh@0.1.0-rc.6` 替换为该仓库约定的 `pnpm dsh`。
+新建一个对话，尝试发送：
 
-## Tarball 安装
+- “列出我可以访问的知识库。”
+- “列出知识库中的文件。”
+- “读取这个文件的元数据。”
+- “在 KnowV 中搜索与……相关的内容。”
 
-生成本地 tarball：
+结果只会包含当前 API Key 有权限访问的知识和文件。
 
-```bash
-git clone https://github.com/knowvai/dsh-plugin.git
-cd dsh-plugin
-pnpm pack
-```
+## 更新插件
 
-然后安装生成的包：
+先移除旧版本，再安装最新版本：
 
 ```bash
 npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
-  plugin --profile web add ./knowvai-knowv-0.1.0.tgz
+  plugin --profile web remove @knowvai/knowv
+
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
+  plugin --profile web add github:knowvai/dsh-plugin
 ```
 
-本包标记为 private，用于阻止意外发布到 npm；本地目录和 tarball 安装不受影响。
+如果你安装的是更早版本，旧包名可能是 `@knowvai/dsh-plugin`；请先移除这个旧包，再执行上面的安装命令。
 
-## 可用工具
-
-连接和 `tools/list` 成功后，Harness 会注册以下工具：
-
-| Harness 工具名 | 用途 |
-| --- | --- |
-| `mcp__knowv__knowv_list_knowledge_bases` | 列出当前用户可访问的知识库 |
-| `mcp__knowv__knowv_list_files` | 列出指定授权知识库中的文件 |
-| `mcp__knowv__knowv_get_file` | 获取指定授权文件的元数据 |
-| `mcp__knowv__knowv_search_knowledge` | 在授权知识范围内检索候选证据 |
-
-可以用下面的请求验证工具发现和基本调用：
-
-```text
-使用 KnowV MCP 列出我可以访问的知识库。
-```
-
-工具身份和租户范围始终来自 AuthGate 验证后的 USER API Key。工具参数只能缩小检索范围，不能扩大权限。
-
-## 启动和重连策略
-
-- 单次工具调用超时为 60 秒。
-- 初始连接失败不会阻止 Harness 启动；此时不会注册 KnowV 工具。
-- 插件启用自动重连，初始延迟 500 ms，指数退避上限 30 秒，每次中断最多连续尝试 10 次。
-- URL 或 API Key 缺失/空白属于本地配置错误，会在插件配置校验阶段直接失败。
-- 修改环境变量后需要重启 Harness；环境变量变化本身不会触发 profile HMR。
-
-## Profile 覆盖
-
-DSH 的后续 patch 会替换目标行的整个 `config`，不会按字段深度合并。若在 profile 的 `cordis.patch.yml` 中覆盖 `knowv-mcp`，必须重述所有必需字段，而不是只写被修改的字段：
-
-```yaml
-- id: knowv-mcp
-  config:
-    serverName: knowv
-    transport: streamable-http
-    url: !!js >-
-      process.env.KNOWV_MCP_SERVER_URL?.trim()
-        && process.env.KNOWV_MCP_API_KEY?.trim()
-        ? process.env.KNOWV_MCP_SERVER_URL.trim()
-        : undefined
-    headers:
-      Authorization: !!js >-
-        process.env.KNOWV_MCP_SERVER_URL?.trim()
-          && process.env.KNOWV_MCP_API_KEY?.trim()
-          ? `Bearer ${process.env.KNOWV_MCP_API_KEY.trim()}`
-          : undefined
-    toolCallTimeoutMs: 60000
-    failOnStartupError: false
-    reconnect:
-      enabled: true
-      initialDelayMs: 500
-      maxDelayMs: 30000
-      maxAttempts: 10
-```
-
-## 卸载
+## 卸载插件
 
 ```bash
 npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
   plugin --profile web remove @knowvai/knowv
 ```
 
-卸载 bundle 或通过 HMR 替换配置时，Harness 会释放 MCP 连接并注销该实例注册的工具。
+卸载后重启 Harness 即可。
 
-如果安装过包装入口引入前的旧版本，旧 profile 依赖名是 `@knowvai/dsh-plugin`，升级时先按旧名称卸载，再从同一个 GitHub 仓库重新安装：
+## 常见问题
 
-```bash
-npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
-  plugin --profile web remove @knowvai/dsh-plugin
+### 提示 `pnpm not found on PATH`
 
-npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
-  plugin --profile web add github:knowvai/dsh-plugin
-```
+请先按照 [pnpm 安装说明](https://pnpm.io/installation) 安装 pnpm，然后重新执行安装命令。
 
-## 当前限制
+### 插件显示了，但对话中没有知识库工具
 
-- 首版只桥接 MCP Tools。
-- DeepSeek Harness 当前没有 MCP Resources 和 Prompts 的消费接口，因此 `knowv://...` Resources 不会出现在 Harness 中。
-- KnowV MCP Server 必须独立部署并保持可访问；本 bundle 不启动、迁移或管理服务端。
-- Streamable HTTP 连接需要系统信任 endpoint 的 TLS 证书；不要长期关闭证书校验。
+确认以下内容：
 
-KnowV MCP 的完整客户端合同和排障信息见 [KnowV MCP Server 使用指南](https://github.com/knowvai/knowv-ai/blob/main/docs/mcp-server-usage-guide.md)。
+1. `KNOWV_MCP_SERVER_URL` 是否精确为 `https://console.knowvai.com/mcp`。
+2. `KNOWV_MCP_API_KEY` 是否是刚从 [API Key 管理页面](https://console.knowvai.com/manager-api-key) 创建的完整 Key。
+3. 环境变量是否在启动 Harness 的同一个终端中设置。
+4. 设置变量后是否重新启动了 Harness。
+
+### 插件列表仍显示旧名称
+
+这通常表示旧版本仍在 profile 中。移除旧包 `@knowvai/dsh-plugin`（或 `@knowvai/dsh-mcp`），再重新安装本仓库，并重启 Harness。
+
+## 安全提示
+
+API Key 等同于你的 KnowV 访问凭证。不要把它提交到 Git、写入 README、截图或发送给他人；只通过环境变量配置。
