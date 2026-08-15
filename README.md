@@ -1,12 +1,12 @@
 # dsh-plugin
 
-`@knowvai/dsh-plugin` 是 KnowV MCP 的 DeepSeek Harness bundle。它通过 Harness 官方的 `@deepseek-ai/dsh-mcp-client` 连接 KnowV MCP Server，并将 KnowV 的只读知识工具注册为 Harness 原生工具。
+`dsh-plugin` 仓库交付安装名为 `@knowvai/knowv` 的 DeepSeek Harness bundle。它通过一个轻量包装入口复用 Harness 官方的 `@deepseek-ai/dsh-mcp-client`，在插件列表中显示为 `knowv`，并将 KnowV 的只读知识工具注册为 Harness 原生工具。
 
-插件本身不实现 MCP 协议，也不包含 URL、API Key 或租户信息。
+包装入口只覆盖 Cordis 插件名称，不实现 MCP 协议，也不包含 URL、API Key 或租户信息。
 
 ## 前提
 
-- DeepSeek Harness `0.1.0-rc.5` 或兼容版本。
+- DeepSeek Harness `0.1.0-rc.6`；包装入口依赖同版本的官方 MCP client。
 - Node.js `^22.19.0` 或 `>=24.0.0`。
 - pnpm 11 或兼容版本，并且 `pnpm` 必须位于 `PATH` 中。
 - 客户端可以访问经 AuthGate 暴露的 KnowV MCP endpoint。
@@ -53,7 +53,7 @@ npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
 npx --yes @deepseek-ai/dsh@0.1.0-rc.6 --profile web
 ```
 
-也可以安装到其他 profile，例如 `headless`。配置 dump 中应出现 `@knowvai/dsh-plugin` layer，以及 id 为 `knowv-mcp`、name 为 `@deepseek-ai/dsh-mcp-client` 的插件行。
+也可以安装到其他 profile，例如 `headless`。GitHub 仓库名与安装后的包名相互独立：配置 dump 中应出现 `@knowvai/knowv` layer，以及 id 为 `knowv-mcp`、name 为 `@knowvai/knowv` 的插件行；Web UI 的“设置 → 插件列表”中应显示 `knowv`。
 
 生产环境建议固定 Git commit，避免默认分支后续变化改变安装内容：
 
@@ -78,7 +78,7 @@ pnpm pack
 
 ```bash
 npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
-  plugin --profile web add ./knowvai-dsh-plugin-0.1.0.tgz
+  plugin --profile web add ./knowvai-knowv-0.1.0.tgz
 ```
 
 本包标记为 private，用于阻止意外发布到 npm；本地目录和 tarball 安装不受影响。
@@ -143,10 +143,20 @@ DSH 的后续 patch 会替换目标行的整个 `config`，不会按字段深度
 
 ```bash
 npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
-  plugin --profile web remove @knowvai/dsh-plugin
+  plugin --profile web remove @knowvai/knowv
 ```
 
 卸载 bundle 或通过 HMR 替换配置时，Harness 会释放 MCP 连接并注销该实例注册的工具。
+
+如果安装过包装入口引入前的旧版本，旧 profile 依赖名是 `@knowvai/dsh-plugin`，升级时先按旧名称卸载，再从同一个 GitHub 仓库重新安装：
+
+```bash
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
+  plugin --profile web remove @knowvai/dsh-plugin
+
+npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
+  plugin --profile web add github:knowvai/dsh-plugin
+```
 
 ## 当前限制
 

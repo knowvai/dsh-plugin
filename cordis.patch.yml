@@ -2,7 +2,7 @@
 # the generic MCP client; this bundle contributes only the deployment config.
 - insert:
     - id: knowv-mcp
-      name: '@deepseek-ai/dsh-mcp-client'
+      name: '@knowvai/knowv'
       config:
         serverName: knowv
         transport: streamable-http
