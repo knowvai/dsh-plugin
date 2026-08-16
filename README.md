@@ -8,8 +8,6 @@
 https://console.knowvai.com/mcp
 ```
 
-不需要部署服务器，也不要填写其他 MCP 地址。
-
 ## 开始前
 
 - 已安装 DeepSeek Harness `0.1.0-rc.6` 或更高版本。
