@@ -1,9 +1,12 @@
 {
   "name": "@knowvai/knowv",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "DeepSeek Harness bundle for the KnowV MCP Server",
   "private": true,
   "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
   "main": "./index.js",
   "exports": {
     ".": "./index.js"
@@ -26,6 +29,9 @@
   },
   "dependencies": {
     "@deepseek-ai/dsh-mcp-client": "0.1.0-rc.6"
+  },
+  "devDependencies": {
+    "@deepseek-ai/dsh-app-boot": "0.1.0-rc.6"
   },
   "dsh": {
     "bundle": {
