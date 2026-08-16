@@ -33,12 +33,13 @@ API Key 的权限由它所属的 KnowV 账号和租户决定。Harness 中不能
 
 ## 3. 配置环境变量
 
-必须在启动 DeepSeek Harness 的同一个终端中设置以下变量：
+只需要配置 API Key。MCP 服务地址已经内置为上面列出的 KnowV 官方地址，不需要也不能通过环境变量覆盖：
 
 ```bash
-export KNOWV_MCP_SERVER_URL="https://console.knowvai.com/mcp"
 export KNOWV_MCP_API_KEY="粘贴你刚创建的 API Key"
 ```
+
+API Key 不是启动 Harness 的前置条件。如果暂时不配置 Key，Harness 仍会正常启动，`knowv` 会出现在“设置 → 插件”中并保持“已禁用”状态；这是预期行为，此时不会提供 KnowV 工具。配置 Key 后重新启动 Harness，插件才会变为启用状态。
 
 然后从这个终端启动 Harness：
 
@@ -50,13 +51,13 @@ npx --yes @deepseek-ai/dsh@0.1.0-rc.6 --profile web
 
 ## 4. 检查是否配置成功
 
-打开 Harness 的“设置 → 插件”，插件列表中应看到 `knowv`。
+打开 Harness 的“设置 → 插件”，插件列表中应看到 `knowv`。如果没有 API Key，插件显示为“已禁用”是正常的；配置 Key 并重启后应显示为“已启用”。
 
-在“插件列表”中搜索 `knowv`，状态应显示为“已启用”：
+有 API Key 并重启 Harness 后，在“插件列表”中搜索 `knowv`，状态应显示为“已启用”：
 
 ![KnowV 插件已在 DeepSeek Harness 中启用](docs/images/knowv-plugin-enabled.png)
 
-新建一个对话，尝试发送：
+插件启用并完成连接后，新建一个对话，尝试发送：
 
 - “列出我可以访问的知识库。”
 - “列出知识库中的文件。”
@@ -106,10 +107,10 @@ npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
 
 确认以下内容：
 
-1. `KNOWV_MCP_SERVER_URL` 是否精确为 `https://console.knowvai.com/mcp`。
-2. `KNOWV_MCP_API_KEY` 是否是刚从 [API Key 管理页面](https://console.knowvai.com/manager-api-key) 创建的完整 Key。
-3. 环境变量是否在启动 Harness 的同一个终端中设置。
-4. 设置变量后是否重新启动了 Harness。
+1. `KNOWV_MCP_API_KEY` 是否是刚从 [API Key 管理页面](https://console.knowvai.com/manager-api-key) 创建的完整 Key。
+2. 环境变量是否在启动 Harness 的同一个终端中设置。
+3. 设置变量后是否重新启动了 Harness。
+4. “设置 → 插件”中的 `knowv` 是否显示为“已启用”。如果仍为“已禁用”，说明当前进程没有读取到有效的 API Key。
 
 ### 插件列表仍显示旧名称
 
@@ -117,4 +118,4 @@ npx --yes @deepseek-ai/dsh@0.1.0-rc.6 \
 
 ## 安全提示
 
-API Key 等同于你的 KnowV 访问凭证。不要把它提交到 Git、写入 README、截图或发送给他人；只通过环境变量配置。
+API Key 等同于你的 KnowV 访问凭证。插件只会把它发送到内置的 KnowV 官方 MCP 服务，不会发送到用户指定的其他地址。不要把 Key 提交到 Git、写入 README、截图或发送给他人；只通过环境变量配置。

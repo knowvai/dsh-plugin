@@ -3,18 +3,15 @@
 - insert:
     - id: knowv-mcp
       name: '@knowvai/knowv'
+      disabled: !!js >-
+        !process.env.KNOWV_MCP_API_KEY?.trim()
       config:
         serverName: knowv
         transport: streamable-http
-        url: !!js >-
-          process.env.KNOWV_MCP_SERVER_URL?.trim()
-            && process.env.KNOWV_MCP_API_KEY?.trim()
-            ? process.env.KNOWV_MCP_SERVER_URL.trim()
-            : undefined
+        url: https://console.knowvai.com/mcp
         headers:
           Authorization: !!js >-
-            process.env.KNOWV_MCP_SERVER_URL?.trim()
-              && process.env.KNOWV_MCP_API_KEY?.trim()
+            process.env.KNOWV_MCP_API_KEY?.trim()
               ? `Bearer ${process.env.KNOWV_MCP_API_KEY.trim()}`
               : undefined
         toolCallTimeoutMs: 60000
