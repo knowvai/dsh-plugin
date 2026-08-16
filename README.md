@@ -52,6 +52,10 @@ npx --yes @deepseek-ai/dsh@0.1.0-rc.6 --profile web
 
 打开 Harness 的“设置 → 插件”，插件列表中应看到 `knowv`。
 
+在“插件列表”中搜索 `knowv`，状态应显示为“已启用”：
+
+![KnowV 插件已在 DeepSeek Harness 中启用](docs/images/knowv-plugin-enabled.png)
+
 新建一个对话，尝试发送：
 
 - “列出我可以访问的知识库。”
@@ -60,6 +64,14 @@ npx --yes @deepseek-ai/dsh@0.1.0-rc.6 --profile web
 - “在 KnowV 中搜索与……相关的内容。”
 
 结果只会包含当前 API Key 有权限访问的知识和文件。
+
+例如，让 Harness 列出当前账号可访问的知识库时，可以看到实际调用的 KnowV 工具和返回结果：
+
+![在 DeepSeek Harness 中使用 KnowV 列出知识库](docs/images/knowv-list-knowledge-bases.png)
+
+还可以直接针对知识库中的文档提问，Harness 会调用 KnowV 检索并基于命中的内容回答：
+
+![在 DeepSeek Harness 中使用 KnowV 检索文档并回答问题](docs/images/knowv-knowledge-search.png)
 
 ## 更新插件
 
